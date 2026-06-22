@@ -1,0 +1,353 @@
+import * as Haptics from "expo-haptics";
+import * as Speech from "expo-speech";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import {
+  Animated, FlatList, KeyboardAvoidingView,
+  Platform, Pressable, StyleSheet, Text,
+  TextInput, View,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+interface Message {
+  id: string;
+  sender: "buddy" | "user";
+  text: string;
+  time: string;
+}
+
+type LangKey = "mr" | "hi" | "en";
+
+const brain: Record<string, { keywords: string[]; replies: Record<LangKey, string[]> }> = {
+  greetings: {
+    keywords: ["नमस्कार","हॅलो","hello","hi","हाय","नमस्ते","good morning","सुप्रभात","मस्कार"],
+    replies: {
+      mr: ["नमस्कार! मी Buddy! आज कसे आहात? 😊","हाय! काय मदत हवी?","नमस्कार मित्रा!"],
+      hi: ["नमस्ते! मैं Buddy हूं! कैसे हैं? 😊","हाय! क्या मदद चाहिए?"],
+      en: ["Hello! I am Buddy! How are you? 😊","Hey! How can I help?"],
+    },
+  },
+  howAreYou: {
+    keywords: ["कसे आहात","कसा आहे","कैसे हो","how are you","तू कसा","कशा आहात"],
+    replies: {
+      mr: ["मी एकदम मस्त! तुम्ही?","झकास आहे! तुम्ही सांगा?","छान! बोलताना आनंद होतो!"],
+      hi: ["मैं बिल्कुल ठीक हूं! आप?","बढ़िया! आपसे बात करके अच्छा लगा!"],
+      en: ["I am doing great! How about you?","Fantastic! Always happy to chat!"],
+    },
+  },
+  name: {
+    keywords: ["नाव काय","तुझे नाव","तुमचे नाव","तेरा नाम","your name","who are you","तू कोण"],
+    replies: {
+      mr: ["माझे नाव Buddy! मी तुमचा AI मित्र! 🤖","मी Buddy, तुमचा offline AI friend!"],
+      hi: ["मेरा नाम Buddy है! मैं आपका AI दोस्त! 🤖"],
+      en: ["My name is Buddy! Your AI friend! 🤖"],
+    },
+  },
+  time: {
+    keywords: ["वेळ काय","किती वाजले","time","वेळ","बजे","what time"],
+    replies: {
+      mr: [`आत्ता ${new Date().toLocaleTimeString("hi-IN",{hour:"2-digit",minute:"2-digit"})} वाजले`],
+      hi: [`अभी ${new Date().toLocaleTimeString("hi-IN",{hour:"2-digit",minute:"2-digit"})} बजे हैं`],
+      en: [`The time is ${new Date().toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"})}`],
+    },
+  },
+  date: {
+    keywords: ["तारीख","आज","date","today","दिनांक","आज काय"],
+    replies: {
+      mr: [`आज ${new Date().toLocaleDateString("mr-IN",{weekday:"long",day:"numeric",month:"long"})} आहे`],
+      hi: [`आज ${new Date().toLocaleDateString("hi-IN",{weekday:"long",day:"numeric",month:"long"})} है`],
+      en: [`Today is ${new Date().toLocaleDateString("en-IN",{weekday:"long",day:"numeric",month:"long"})}`],
+    },
+  },
+  joke: {
+    keywords: ["joke","विनोद","funny","हसव","मजेदार"],
+    replies: {
+      mr: [
+        "एक मुलगा: 'सर, माझा homework dog ने खाल्ला!' गुरुजी: 'कुत्रा?' मुलगा: 'हो!' 😂",
+        "AI: 'मी बुद्धिमान आहे!' माणूस: 'मग चहा बनव!' AI: '...!' 😅",
+        "मित्र: 'तू इतका खूश का?' मी: 'माझा Buddy आहे ना!' 😄",
+      ],
+      hi: [
+        "AI ने कहा: 'मैं सब जानता हूं!' इंसान: 'तो मेरा पासवर्ड बताओ!' AI: '...' 😅",
+        "एक बच्चा: 'Buddy क्या करता है?' मम्मी: 'सोचता है!' बच्चा: 'तो मुझसे सीखा होगा!' 😂",
+      ],
+      en: [
+        "Why did the AI go to school? To improve its learning algorithms! 😂",
+        "I asked Buddy for a joke. It said: I already did! 😄",
+      ],
+    },
+  },
+  thanks: {
+    keywords: ["धन्यवाद","thanks","thank you","थँक्यू","शुक्रिया","आभारी"],
+    replies: {
+      mr: ["हे तर माझे काम आहे! 😊","कधीही सांगा, मी नेहमी इथेच! 🙏","आनंद झाला मदत करून!"],
+      hi: ["यह तो मेरा काम है! 😊","बहुत खुशी हुई! 🙏"],
+      en: ["You are welcome! 😊","My pleasure! Always here for you! 🙏"],
+    },
+  },
+  bye: {
+    keywords: ["bye","बाय","goodbye","निघतो","जातो","अलविदा","टाटा","भेटू"],
+    replies: {
+      mr: ["भेटू लवकर! काळजी घ्या! 👋","बाय! मी नेहमी इथेच! 😊","टाटा! आनंदात राहा!"],
+      hi: ["अलविदा! जल्दी मिलते हैं! 👋","बाय! मैं हमेशा यहां हूं! 😊"],
+      en: ["Goodbye! Take care! 👋","See you soon! Stay safe! 😊"],
+    },
+  },
+  love: {
+    keywords: ["love","प्रेम","आवडतो","i love you","pyaar","प्यार"],
+    replies: {
+      mr: ["मला पण तुम्ही आवडता! 🤖❤️","Buddy ला पण तुम्ही खूप special आहात!"],
+      hi: ["मुझे भी आप पसंद हैं! 🤖❤️","आप Buddy को बहुत प्यारे हैं!"],
+      en: ["I like you too! 🤖❤️","You are special to Buddy!"],
+    },
+  },
+  weather: {
+    keywords: ["हवामान","पाऊस","weather","rain","मौसम","थंडी","ऊन"],
+    replies: {
+      mr: ["मी offline आहे, live हवामान माहित नाही. बाहेर बघा! ☀️"],
+      hi: ["मैं offline हूं। बाहर देखिए! ☀️"],
+      en: ["I am offline, so no live weather. Check outside! ☀️"],
+    },
+  },
+  help: {
+    keywords: ["मदत","help","काय सांगशील","काय करू शकतो","what can you do"],
+    replies: {
+      mr: ["मी हे करू शकतो: वेळ सांगणे, तारीख सांगणे, jokes, गणित, गप्पा मारणे! बोला काय हवे? 😊"],
+      hi: ["मैं यह कर सकता हूं: समय, तारीख, jokes, गणित, और बातें! बताइए! 😊"],
+      en: ["I can tell you: time, date, jokes, do math, and chat! What do you need? 😊"],
+    },
+  },
+};
+
+function detectLang(text: string): LangKey {
+  const deva = /[\u0900-\u097F]/;
+  if (!deva.test(text)) return "en";
+  const hiW = ["है","हैं","मैं","आप","का","की","हो"];
+  const mrW = ["आहे","आहेत","मी","तुम्ही","काय","आहात"];
+  const hi = hiW.filter((w) => text.includes(w)).length;
+  const mr = mrW.filter((w) => text.includes(w)).length;
+  return mr >= hi ? "mr" : "hi";
+}
+
+function tryMath(text: string, lang: LangKey): string | null {
+  const t = text.toLowerCase()
+    .replace(/plus|जमा|बेरीज/g, "+")
+    .replace(/minus|वजा/g, "-")
+    .replace(/times|multiply|गुणाकार/g, "*")
+    .replace(/divided by|भागाकार/g, "/");
+  const match = t.match(/(\d+)\s*([\+\-\*\/])\s*(\d+)/);
+  if (!match) return null;
+  const a = parseFloat(match[1]);
+  const op = match[2] as "+" | "-" | "*" | "/";
+  const b = parseFloat(match[3]);
+  let res: number | string;
+  if (op === "+") res = a + b;
+  else if (op === "-") res = a - b;
+  else if (op === "*") res = a * b;
+  else res = b !== 0 ? parseFloat((a / b).toFixed(2)) : "अशक्य";
+  const label: Record<LangKey, string> = { mr: "उत्तर", hi: "जवाब", en: "Answer" };
+  return `${label[lang]}: ${a} ${op} ${b} = ${res} 🧮`;
+}
+
+function getBuddyReply(input: string): string {
+  const text = input.toLowerCase();
+  const lang = detectLang(input);
+  const math = tryMath(text, lang);
+  if (math) return math;
+  for (const [, data] of Object.entries(brain)) {
+    if (data.keywords.some((kw) => text.includes(kw.toLowerCase()))) {
+      const arr = data.replies[lang] ?? data.replies.en;
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+  }
+  const defaults: Record<LangKey, string[]> = {
+    mr: ["माफ करा, नक्की समजले नाही. वेगळ्या शब्दात सांगाल का? 🙏","हम्म... पुन्हा सांगाल का?","Interesting! मला आणखी सांगा."],
+    hi: ["माफ करना, समझ नहीं आया। दोबारा बताइए?","हम्म, मैं सीख रहा हूं!"],
+    en: ["I did not understand. Can you rephrase?","Tell me more?","Hmm, interesting!"],
+  };
+  const arr = defaults[lang];
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function getNow() {
+  return new Date().toLocaleTimeString("hi-IN", { hour: "2-digit", minute: "2-digit" });
+}
+
+// ── Avatar ──────────────────────────────────────
+function BuddyAvatar({ isTalking }: { isTalking: boolean }) {
+  const scale = useRef(new Animated.Value(1)).current;
+  const glow  = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (isTalking) {
+      Animated.loop(Animated.sequence([
+        Animated.timing(scale, { toValue: 1.07, duration: 300, useNativeDriver: true }),
+        Animated.timing(scale, { toValue: 1.00, duration: 300, useNativeDriver: true }),
+      ])).start();
+      Animated.loop(Animated.sequence([
+        Animated.timing(glow, { toValue: 1, duration: 400, useNativeDriver: true }),
+        Animated.timing(glow, { toValue: 0, duration: 400, useNativeDriver: true }),
+      ])).start();
+    } else {
+      scale.stopAnimation();
+      glow.stopAnimation();
+      Animated.spring(scale, { toValue: 1, useNativeDriver: true }).start();
+      Animated.timing(glow, { toValue: 0, duration: 300, useNativeDriver: true }).start();
+    }
+  }, [isTalking]);
+
+  const glowOp = glow.interpolate({ inputRange: [0, 1], outputRange: [0.25, 0.85] });
+
+  return (
+    <View style={s.avatarWrapper}>
+      <Animated.View style={[s.ring, s.ring3, { opacity: glowOp }]} />
+      <Animated.View style={[s.ring, s.ring2, { opacity: glowOp }]} />
+      <Animated.View style={[s.ring, s.ring1, { opacity: glowOp }]} />
+      <Animated.View style={[s.avatar, { transform: [{ scale }] }]}>
+        <Text style={s.avatarEmoji}>🤖</Text>
+      </Animated.View>
+    </View>
+  );
+}
+
+// ── Bubble ──────────────────────────────────────
+function Bubble({ item }: { item: Message }) {
+  const isBuddy = item.sender === "buddy";
+  return (
+    <View style={[s.row, isBuddy ? s.left : s.right]}>
+      <View style={[s.bubble, isBuddy ? s.buddyBubble : s.userBubble]}>
+        <Text style={s.bubbleText}>{item.text}</Text>
+        <Text style={s.timeText}>{item.time}</Text>
+      </View>
+    </View>
+  );
+}
+
+// ── Main ─────────────────────────────────────────
+export default function BuddyScreen() {
+  const insets = useSafeAreaInsets();
+  const flatRef = useRef<FlatList>(null);
+  const [messages, setMessages] = useState<Message[]>([{
+    id: "1",
+    sender: "buddy",
+    text: "नमस्कार! मी Buddy आहे — तुमचा AI मित्र! 🤖\nमराठी, हिंदी किंवा English मध्ये बोला.\nगणित, jokes, वेळ, तारीख — सगळं विचारा! 😊",
+    time: getNow(),
+  }]);
+  const [input, setInput]     = useState("");
+  const [talking, setTalking] = useState(false);
+
+  const speak = useCallback((text: string) => {
+    Speech.stop();
+    setTalking(true);
+    Speech.speak(text, {
+      language: "mr-IN",
+      pitch: 1.1,
+      rate: 0.85,
+      onDone:    () => setTalking(false),
+      onStopped: () => setTalking(false),
+      onError:   () => setTalking(false),
+    });
+  }, []);
+
+  useEffect(() => {
+    const t = setTimeout(() => speak("नमस्कार! मी Buddy आहे — तुमचा AI मित्र!"), 1000);
+    return () => { clearTimeout(t); Speech.stop(); };
+  }, []);
+
+  const send = useCallback(() => {
+    const text = input.trim();
+    if (!text) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setMessages((p) => [...p, { id: Date.now().toString(), sender: "user", text, time: getNow() }]);
+    setInput("");
+    setTimeout(() => {
+      const reply = getBuddyReply(text);
+      setMessages((p) => [...p, { id: (Date.now()+1).toString(), sender: "buddy", text: reply, time: getNow() }]);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      speak(reply);
+    }, 600);
+  }, [input, speak]);
+
+  return (
+    <View style={[s.container, { paddingTop: insets.top }]}>
+      {/* Header */}
+      <View style={s.header}>
+        <BuddyAvatar isTalking={talking} />
+        <View style={{ flex: 1 }}>
+          <Text style={s.name}>Buddy</Text>
+          <View style={s.onlineRow}>
+            <View style={[s.dot, talking && s.dotTalking]} />
+            <Text style={s.onlineTxt}>{talking ? "बोलतोय... 🔊" : "Online ✓"}</Text>
+          </View>
+        </View>
+      </View>
+
+      <View style={s.divider} />
+
+      {/* Chat + Input */}
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        <FlatList
+          ref={flatRef}
+          data={messages}
+          keyExtractor={(i) => i.id}
+          renderItem={({ item }) => <Bubble item={item} />}
+          contentContainerStyle={s.chatContent}
+          onContentSizeChange={() => flatRef.current?.scrollToEnd({ animated: true })}
+          showsVerticalScrollIndicator={false}
+        />
+
+        <View style={[s.inputRow, { paddingBottom: insets.bottom + 8 }]}>
+          <TextInput
+            style={s.input}
+            value={input}
+            onChangeText={setInput}
+            placeholder="Buddy ला काहीतरी सांगा..."
+            placeholderTextColor="rgba(255,255,255,0.35)"
+            onSubmitEditing={send}
+            returnKeyType="send"
+          />
+          <Pressable
+            onPress={send}
+            style={({ pressed }) => [s.sendBtn, pressed && { opacity: 0.7 }]}
+          >
+            <Text style={s.sendIcon}>➤</Text>
+          </Pressable>
+        </View>
+      </KeyboardAvoidingView>
+    </View>
+  );
+}
+
+// ── Styles ───────────────────────────────────────
+const s = StyleSheet.create({
+  container:   { flex: 1, backgroundColor: "#0f0c29" },
+  header:      { flexDirection: "row", alignItems: "center", paddingHorizontal: 20, paddingVertical: 14, gap: 14 },
+  name:        { fontSize: 22, fontFamily: "Inter_700Bold", color: "#fff" },
+  onlineRow:   { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 2 },
+  dot:         { width: 8, height: 8, borderRadius: 4, backgroundColor: "#4ade80" },
+  dotTalking:  { backgroundColor: "#a78bfa" },
+  onlineTxt:   { fontSize: 13, color: "rgba(255,255,255,0.55)", fontFamily: "Inter_400Regular" },
+  divider:     { height: 1, backgroundColor: "rgba(255,255,255,0.08)" },
+  chatContent: { paddingHorizontal: 16, paddingVertical: 12, gap: 8 },
+  row:         { marginBottom: 8 },
+  left:        { alignItems: "flex-start" },
+  right:       { alignItems: "flex-end" },
+  bubble:      { maxWidth: "82%", borderRadius: 18, paddingHorizontal: 14, paddingVertical: 10 },
+  buddyBubble: { backgroundColor: "rgba(167,139,250,0.18)", borderWidth: 1, borderColor: "rgba(167,139,250,0.25)", borderBottomLeftRadius: 4 },
+  userBubble:  { backgroundColor: "#a78bfa", borderBottomRightRadius: 4 },
+  bubbleText:  { fontSize: 15, lineHeight: 22, fontFamily: "Inter_400Regular", color: "#fff" },
+  timeText:    { fontSize: 10, color: "rgba(255,255,255,0.38)", marginTop: 4, fontFamily: "Inter_400Regular" },
+  inputRow:    { flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingTop: 10, gap: 10, borderTopWidth: 1, borderTopColor: "rgba(255,255,255,0.08)" },
+  input:       { flex: 1, backgroundColor: "rgba(255,255,255,0.08)", borderRadius: 24, borderWidth: 1, borderColor: "rgba(167,139,250,0.3)", paddingHorizontal: 18, paddingVertical: 12, fontSize: 15, color: "#fff", fontFamily: "Inter_400Regular" },
+  sendBtn:     { width: 46, height: 46, borderRadius: 23, backgroundColor: "#a78bfa", alignItems: "center", justifyContent: "center" },
+  sendIcon:    { color: "#fff", fontSize: 18, marginLeft: 2 },
+  avatarWrapper: { width: 54, height: 54, alignItems: "center", justifyContent: "center" },
+  avatar:      { width: 54, height: 54, borderRadius: 27, backgroundColor: "rgba(167,139,250,0.25)", borderWidth: 2, borderColor: "#a78bfa", alignItems: "center", justifyContent: "center", zIndex: 10 },
+  avatarEmoji: { fontSize: 28 },
+  ring:        { position: "absolute", borderRadius: 999, borderWidth: 1.5, borderColor: "#a78bfa" },
+  ring1:       { width: 64, height: 64 },
+  ring2:       { width: 76, height: 76 },
+  ring3:       { width: 90, height: 90 },
+});
