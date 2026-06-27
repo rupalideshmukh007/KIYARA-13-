@@ -1,0 +1,1 @@
+module.exports = require("@supersami/rn-foreground-service");
