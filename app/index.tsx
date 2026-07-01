@@ -47,7 +47,7 @@ const getStyles = () => StyleSheet.create({
     statusText: { color: '#fff', fontSize: 16, fontWeight: '500' }
 });
 
-export default function BuddyScreen() {
+export default function KiyaraScreen() {
     const insets = useSafeAreaInsets();
     const [appState, setAppState] = useState<AppState>("idle");
     const [isVoiceSettingsVisible, setVoiceSettingsVisible] = useState(false);
