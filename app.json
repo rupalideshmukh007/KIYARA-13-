@@ -1,10 +1,11 @@
 {
   "expo": {
-    "name": "Buddy AI",
-    "slug": "buddy-ai",
+    "name": "KIYARA",
+    "slug": "kiyara",
     "version": "1.0.0",
     "orientation": "portrait",
-    "scheme": "buddy-ai",
+    "scheme": "kiyara",
+    "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
     "splash": {
       "resizeMode": "contain",
@@ -12,10 +13,14 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.yourname.buddyai"
+      "bundleIdentifier": "com.yourname.kiyara"
     },
     "android": {
-      "package": "com.yourname.buddyai",
+      "package": "com.yourname.kiyara",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0f0c29"
+      },
       "permissions": [
         "android.permission.RECORD_AUDIO",
         "android.permission.FOREGROUND_SERVICE",
@@ -31,8 +36,8 @@
       "expo-web-browser",
       ["expo-notifications", { "color": "#a78bfa" }],
       ["@react-native-voice/voice", {
-        "microphonePermission": "Buddy ला microphone लागतो.",
-        "speechRecognitionPermission": "Buddy ला आवाज ऐकायला लागतो."
+        "microphonePermission": "Kiyara ला microphone लागतो.",
+        "speechRecognitionPermission": "Kiyara ला आवाज ऐकायला लागतो."
       }]
     ],
     "experiments": {

@@ -1,151 +1,83 @@
 
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Modal,
-  TouchableOpacity,
-  Alert
-} from 'react-native';
+import { View, Modal, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 
 interface ThemeSettingsProps {
   visible: boolean;
   onClose: () => void;
-  onThemeChange: (theme: 'light' | 'dark' | 'custom') => void;
-  onCustomImageSelect: (uri: string) => void;
+  onSetTheme: (themeUri: string | null) => void;
 }
 
-const ThemeSettings: React.FC<ThemeSettingsProps> = ({ visible, onClose, onThemeChange, onCustomImageSelect }) => {
+const ThemeSettings: React.FC<ThemeSettingsProps> = ({ visible, onClose, onSetTheme }) => {
 
-  const handlePickImage = async () => {
-    // Ask for permission
+  const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
-      Alert.alert('Permission Denied', 'Sorry, we need camera roll permissions to make this work!');
+      alert('गॅलरी ॲक्सेस करण्यासाठी परवानगी आवश्यक आहे!');
       return;
     }
 
-    // Launch image picker
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
-      aspect: [9, 16],
       quality: 1,
     });
 
     if (!result.canceled) {
-        onCustomImageSelect(result.assets[0].uri);
+      onSetTheme(result.assets[0].uri);
+      onClose();
     }
   };
 
+  const setDefault = () => {
+      onSetTheme(null); // null signifies the default theme
+      onClose();
+  }
+
   return (
-    <Modal
-      animationType="slide"
-      transparent={true}
-      visible={visible}
-      onRequestClose={onClose}
-    >
-      <View style={styles.centeredView}>
-        <View style={styles.modalView}>
-          <Text style={styles.title}>🎨 स्टायलिश सेटिंग्ज 🎨</Text>
+    <Modal visible={visible} transparent={true} animationType="fade" onRequestClose={onClose}>
+      <TouchableOpacity style={styles.centeredView} activeOpacity={1} onPressOut={onClose}>
+        <View style={styles.modalView} onStartShouldSetResponder={() => true}>
+          <Text style={styles.modalTitle}>थीम बदला</Text>
 
-          <TouchableOpacity style={styles.button} onPress={() => onThemeChange('dark')}>
-            <Text style={styles.buttonText}>⬛ डार्क मोड</Text>
+          <TouchableOpacity style={styles.optionButton} onPress={setDefault}>
+            <Text style={styles.optionButtonText}>डीफॉल्ट थीम</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.button} onPress={() => onThemeChange('light')}>
-            <Text style={styles.buttonText}>⬜ लाईट मोड</Text>
+          <TouchableOpacity style={styles.optionButton} onPress={pickImage}>
+            <Text style={styles.optionButtonText}>गॅलरीमधून निवडा</Text>
           </TouchableOpacity>
-
-          <TouchableOpacity style={styles.button} onPress={handlePickImage}>
-            <Text style={styles.buttonText}>🖼️ गॅलरीतून फोटो</Text>
-          </TouchableOpacity>
-          
-           <View style={styles.animationPlaceholder}>
-                <Text style={styles.placeholderText}>तुमचे ॲनिमेशन येथे दिसेल</Text>
-            </View>
 
           <TouchableOpacity style={styles.closeButton} onPress={onClose}>
             <Text style={styles.closeButtonText}>बंद करा</Text>
           </TouchableOpacity>
         </View>
-      </View>
+      </TouchableOpacity>
     </Modal>
   );
 };
 
 const styles = StyleSheet.create({
-  centeredView: {
-    flex: 1,
-    justifyContent: 'flex-end',
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-  },
-  modalView: {
-    backgroundColor: '#1e1e2f',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: 20,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: -2,
+    centeredView: { flex: 1, justifyContent: 'flex-end', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)' },
+    modalView: {
+        width: '100%',
+        backgroundColor: '#fff',
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        padding: 25,
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: -3 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 5,
     },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 20,
-  },
-  button: {
-    width: '90%',
-    backgroundColor: '#a78bfa',
-    borderRadius: 10,
-    padding: 15,
-    marginBottom: 10,
-    alignItems: 'center',
-  },
-  buttonText: {
-    fontSize: 16,
-    color: '#fff',
-    fontWeight: '600',
-  },
-  animationPlaceholder: {
-      width: '90%',
-      height: 100,
-      backgroundColor: 'rgba(255, 255, 255, 0.1)',
-      borderRadius: 10,
-      justifyContent: 'center',
-      alignItems: 'center',
-      borderWidth: 1,
-      borderColor: '#a78bfa',
-      borderStyle: 'dashed',
-      marginTop: 15,
-      marginBottom: 15,
-  },
-  placeholderText: {
-      color: '#fff',
-      fontSize: 12,
-  },
-  closeButton: {
-    marginTop: 10,
-    backgroundColor: '#ff6347',
-    borderRadius: 10,
-    padding: 12,
-    width: '90%',
-    alignItems: 'center',
-  },
-  closeButtonText: {
-    fontSize: 16,
-    color: 'white',
-    fontWeight: 'bold',
-  },
+    modalTitle: { fontSize: 22, fontWeight: 'bold', marginBottom: 20, color: '#333' },
+    optionButton: { backgroundColor: '#f2f2f2', borderRadius: 10, paddingVertical: 15, paddingHorizontal: 20, width: '100%', alignItems: 'center', marginBottom: 12 },
+    optionButtonText: { fontSize: 16, color: '#007AFF', fontWeight: '600' },
+    closeButton: { marginTop: 20, },
+    closeButtonText: { color: '#d9534f', fontSize: 17, fontWeight: '500' },
 });
 
 export default ThemeSettings;
