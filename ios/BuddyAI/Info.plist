@@ -7,7 +7,7 @@
     <key>CFBundleDevelopmentRegion</key>
     <string>$(DEVELOPMENT_LANGUAGE)</string>
     <key>CFBundleDisplayName</key>
-    <string>Buddy AI</string>
+    <string>KIYARA</string>
     <key>CFBundleExecutable</key>
     <string>$(EXECUTABLE_NAME)</string>
     <key>CFBundleIdentifier</key>
@@ -27,8 +27,8 @@
       <dict>
         <key>CFBundleURLSchemes</key>
         <array>
-          <string>buddy-ai</string>
-          <string>com.yourname.buddyai</string>
+          <string>kiyara</string>
+          <string>com.yourname.kiyara</string>
         </array>
       </dict>
     </array>
@@ -46,9 +46,9 @@
       <true/>
     </dict>
     <key>NSMicrophoneUsageDescription</key>
-    <string>Buddy ला microphone लागतो.</string>
+    <string>Kiyara ला microphone लागतो.</string>
     <key>NSSpeechRecognitionUsageDescription</key>
-    <string>Buddy ला आवाज ऐकायला लागतो.</string>
+    <string>Kiyara ला आवाज ऐकायला लागतो.</string>
     <key>NSUserActivityTypes</key>
     <array>
       <string>$(PRODUCT_BUNDLE_IDENTIFIER).expo.index_route</string>
