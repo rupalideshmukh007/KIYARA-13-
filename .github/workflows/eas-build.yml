@@ -1,27 +1,41 @@
-name: EAS Build APK
+name: EAS Build
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
-      - master
 
 jobs:
   build:
+    name: Install and build
     runs-on: ubuntu-latest
     steps:
+      - name: Check for EXPO_TOKEN
+        run: |
+          if [ -z "${{ secrets.EXPO_TOKEN }}" ]; then
+            echo "You must add an EXPO_TOKEN secret to your repository settings."
+            echo "Go to https://expo.dev/settings/access-tokens to create one."
+            exit 1
+          fi
+
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: 18.x
+          node-version: 18
 
-      - name: Install Expo CLI
-        run: npm install -g eas-cli
+      - name: Setup Expo and EAS
+        uses: expo/expo-github-action@v8
+        with:
+          expo-version: latest
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
 
-      - name: Build Android APK
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build with EAS
         run: eas build --platform android --profile preview --non-interactive
-        env:
-          EAS_TOKEN: ${{ secrets.EAS_TOKEN }}
