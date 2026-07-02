@@ -24,6 +24,7 @@ jobs:
         with:
           expo-version: latest
           eas-version: latest
+          packager: npm  # Force use of npm
           token: ${{ secrets.EXPO_TOKEN }}
 
       - name: Install dependencies
