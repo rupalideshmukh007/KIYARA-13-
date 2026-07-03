@@ -58,24 +58,6 @@ const brain: Record<string, { keywords: string[]; replies: Record<LangKey, strin
       en: [`Today is ${new Date().toLocaleDateString("en-IN",{weekday:"long",day:"numeric",month:"long"})}`],
     },
   },
-  joke: {
-    keywords: ["joke","विनोद","funny","हसव","मजेदार"],
-    replies: {
-      mr: [
-        "एक मुलगा: 'सर, माझा homework dog ने खाल्ला!' गुरुजी: 'कुत्रा?' मुलगा: 'हो!' 😂",
-        "AI: 'मी बुद्धिमान आहे!' माणूस: 'मग चहा बनव!' AI: '...!' 😅",
-        "मित्र: 'तू इतका खूश का?' मी: 'माझा Buddy आहे ना!' 😄",
-      ],
-      hi: [
-        "AI ਨੇ कहा: 'मैं सब जानता हूं!' इंसान: 'तो मेरा पासवर्ड बताओ!' AI: '...' 😅",
-        "एक बच्चा: 'Buddy क्या करता है?' मम्मी: 'सोचता है!' बच्चा: 'तो मुझसे सीखा होगा!' 😂",
-      ],
-      en: [
-        "Why did the AI go to school? To improve its learning algorithms! 😂",
-        "I asked Buddy for a joke. It said: I already did! 😄",
-      ],
-    },
-  },
   thanks: {
     keywords: ["धन्यवाद","thanks","thank you","थँक्यू","शुक्रिया","आभारी"],
     replies: {
@@ -111,9 +93,9 @@ const brain: Record<string, { keywords: string[]; replies: Record<LangKey, strin
   help: {
     keywords: ["मदत","help","काय सांगशील","काय करू शकतो","what can you do"],
     replies: {
-      mr: ["मी हे करू शकतो: वेळ सांगणे, तारीख सांगणे, jokes, गणित, गप्पा मारणे! बोला काय हवे? 😊"],
-      hi: ["मैं यह कर सकता हूं: समय, तारीख, jokes, गणित, और बातें! बताइए! 😊"],
-      en: ["I can tell you: time, date, jokes, do math, and chat! What do you need? 😊"],
+      mr: ["मी हे करू शकतो: वेळ सांगणे, तारीख सांगणे, गणित, गप्पा मारणे! बोला काय हवे? 😊"],
+      hi: ["मैं यह कर सकता हूं: समय, तारीख, गणित, और बातें! बताइए! 😊"],
+      en: ["I can tell you: time, date, do math, and chat! What do you need? 😊"],
     },
   },
 };
@@ -226,7 +208,7 @@ function Bubble({ item }: { item: Message }) {
 export default function BuddyScreen() {
   const insets = useSafeAreaInsets();
   const flatRef = useRef<FlatList>(null);
-  const [messages, setMessages] = useState<Message[]>([{\n    id: "1",\n    sender: "buddy",\n    text: "नमस्कार! मी Buddy आहे — तुमचा AI मित्र! 🤖\\nमराठी, हिंदी किंवा English मध्ये बोला.\\nगणित, jokes, वेळ, तारीख — सगळं विचारा! 😊",\n    time: getNow(),\n  }]);
+  const [messages, setMessages] = useState<Message[]>([{\n    id: "1",\n    sender: "buddy",\n    text: "नमस्कार! मी Buddy आहे — तुमचा AI मित्र! 🤖\\nमराठी, हिंदी किंवा English मध्ये बोला.\\nगणित, वेळ, तारीख — सगळं विचारा! 😊",\n    time: getNow(),\n  }]);
   const [input, setInput]     = useState("");
   const [talking, setTalking] = useState(false);
 
