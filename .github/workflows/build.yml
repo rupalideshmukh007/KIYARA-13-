@@ -1,4 +1,4 @@
-
+q
 name: Build Android APK
 
 on:
@@ -29,10 +29,25 @@ jobs:
 
       - name: Build APK
         run: |
-          BUILD_OUTPUT=$(eas build --platform android --profile production --non-interactive --json)
-          echo "EAS Build Output:"
-          echo $BUILD_OUTPUT
-          APK_URL=$(echo $BUILD_OUTPUT | jq -r '.artifacts.buildUrl')
+          set -e
+          eas build --platform android --profile production --non-interactive --json > build.json
+          
+          echo "--- EAS Build JSON Output ---"
+          cat build.json
+          echo "-----------------------------"
+
+          APK_URL=$(cat build.json | jq -r '.artifacts.buildUrl')
+
+          if [ -z "$APK_URL" ] || [ "$APK_URL" == "null" ]; then
+            echo "Parsing as object failed, trying as array..."
+            APK_URL=$(cat build.json | jq -r '.[0].artifacts.buildUrl')
+          fi
+
+          if [ -z "$APK_URL" ] || [ "$APK_URL" == "null" ]; then
+            echo "Error: Could not extract buildUrl from the EAS build output."
+            exit 1
+          fi
+          
           echo "Found APK URL: $APK_URL"
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
