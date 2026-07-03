@@ -27,11 +27,6 @@ jobs:
       - name: Install EAS CLI
         run: npm install -g eas-cli
 
-      - name: Configure EAS
-        env:
-          EAS_TOKEN: ${{ secrets.EAS_TOKEN }}
-        run: eas build:configure --platform android
-
       - name: Start EAS Build and get APK URL
         id: build
         env:
