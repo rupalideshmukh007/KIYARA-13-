@@ -1,4 +1,4 @@
-q
+
 name: Build Android APK
 
 on:
@@ -31,23 +31,40 @@ jobs:
         run: |
           set -e
           eas build --platform android --profile production --non-interactive --json > build.json
-          
+
           echo "--- EAS Build JSON Output ---"
           cat build.json
           echo "-----------------------------"
 
-          APK_URL=$(cat build.json | jq -r '.artifacts.buildUrl')
-
-          if [ -z "$APK_URL" ] || [ "$APK_URL" == "null" ]; then
-            echo "Parsing as object failed, trying as array..."
-            APK_URL=$(cat build.json | jq -r '.[0].artifacts.buildUrl')
+          # Check for a top-level error
+          BUILD_ERROR=$(cat build.json | jq -r '.error')
+          if [ -n "$BUILD_ERROR" ] && [ "$BUILD_ERROR" != "null" ]; then
+            echo "EAS Build failed with error: $BUILD_ERROR"
+            exit 1
           fi
 
+          # Check for an error within an array
+          BUILD_ERROR=$(cat build.json | jq -r '.[0].error')
+          if [ -n "$BUILD_ERROR" ] && [ "$BUILD_ERROR" != "null" ]; then
+            echo "EAS Build failed with error: $BUILD_ERROR"
+            exit 1
+          fi
+
+          # Try to parse APK_URL as if the output is a JSON array
+          APK_URL=$(cat build.json | jq -r '.[0].artifacts.buildUrl')
+
+          # If that fails, try to parse it as a simple JSON object
+          if [ -z "$APK_URL" ] || [ "$APK_URL" == "null" ]; then
+            echo "Parsing as array failed, trying as object..."
+            APK_URL=$(cat build.json | jq -r '.artifacts.buildUrl')
+          fi
+
+          # Final check
           if [ -z "$APK_URL" ] || [ "$APK_URL" == "null" ]; then
             echo "Error: Could not extract buildUrl from the EAS build output."
             exit 1
           fi
-          
+
           echo "Found APK URL: $APK_URL"
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
