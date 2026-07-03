@@ -1,5 +1,5 @@
 
-name: Build Android App (EAS)
+name: Build Android App & Upload APK
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    name: Install and Build
+    name: Install, Build, and Upload APK
     runs-on: ubuntu-latest
 
     steps:
@@ -19,17 +19,36 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: 'npm'
 
       - name: Install dependencies
         run: npm install
 
       - name: Install EAS CLI
         run: npm install -g eas-cli
-        
-      - name: Configure EAS Build Profile
+
+      - name: Configure EAS
         run: eas build:configure --platform android
 
-      - name: Trigger EAS Build
+      - name: Start EAS Build and get APK URL
+        id: build
         env:
           EAS_TOKEN: ${{ secrets.EAS_TOKEN }}
-        run: eas build --platform android --non-interactive
+        run: echo "json_output=$(eas build --platform android --wait --non-interactive --json)" >> $GITHUB_OUTPUT
+
+      - name: Download APK from URL
+        env:
+          BUILD_JSON: ${{ steps.build.outputs.json_output }}
+        run: |
+          sudo apt-get update && sudo apt-get install -y jq
+          APK_URL=$(echo "$BUILD_JSON" | jq -r '.artifacts.buildUrl')
+          echo "Found APK URL: $APK_URL"
+          wget -q --show-progress -O kiyara-app.apk "$APK_URL"
+          echo "APK downloaded successfully as kiyara-app.apk"
+
+      - name: Upload APK as a build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: kiyara-android-apk
+          path: kiyara-app.apk
+          retention-days: 7
