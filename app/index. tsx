@@ -293,7 +293,7 @@ export default function KiyaraScreen() {
           <Pressable
             style={({ pressed }) => [s.micBtn, pressed && { opacity: 0.7 }]}
           >
-            <Text style={s.micIcon}>🎤</Text>
+            <Text style={s.micIcon}>🍫</Text>
           </Pressable>
           <Pressable
             onPress={send}
