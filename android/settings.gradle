@@ -7,9 +7,8 @@ pluginManagement {
   ).getParentFile().absolutePath
   includeBuild(reactNativeGradlePlugin)
 
-  // KIARA: The path was being resolved from the android directory, not the project root.
-  // Correcting the path to point to the project's node_modules folder.
-    includeBuild('../node_modules/expo-modules-autolinking/android/expo-gradle-plugin')
+  // Use Node to dynamically resolve the path to the expo-gradle-plugin
+  includeBuild(new File(["node", "--print", "require.resolve('expo-modules-autolinking/package.json')"].execute(null, rootDir).text.trim(), "../android/expo-gradle-plugin"))
 }
 
 plugins {
