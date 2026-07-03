@@ -30,7 +30,7 @@ jobs:
       - name: Configure EAS
         env:
           EAS_TOKEN: ${{ secrets.EAS_TOKEN }}
-        run: eas build:configure --platform android --non-interactive
+        run: eas build:configure --platform android
 
       - name: Start EAS Build and get APK URL
         id: build
