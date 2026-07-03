@@ -27,25 +27,29 @@ jobs:
       - name: Install jq
         run: sudo apt-get update && sudo apt-get install -y jq
 
-      - name: Start Android Build
-        run: eas build --platform android --profile production --non-interactive
-        env:
-          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-
-      - name: Get Build Artifact URL
+      - name: Build APK and Get URL
         run: |
           set -e
-          echo "Fetching latest build details..."
-          BUILD_JSON=$(eas build:list --platform android --limit 1 --json)
-          
-          echo "--- Latest Build JSON ---"
-          echo $BUILD_JSON
-          echo "-------------------------"
+          # Run the build and wait for it to complete, outputting the result to a file.
+          # The --wait flag is crucial for CI environments.
+          eas build --platform android --profile production --non-interactive --wait --json > build.json
 
-          APK_URL=$(echo $BUILD_JSON | jq -r '.[0].artifacts.buildUrl')
+          echo "--- EAS Build JSON Output ---"
+          cat build.json
+          echo "-----------------------------"
 
+          # The output of a successful build with --wait should be a single JSON object
+          APK_URL=$(cat build.json | jq -r '.artifacts.buildUrl')
+
+          # Fallback for older/different JSON structures (e.g., array)
           if [ -z "$APK_URL" ] || [ "$APK_URL" == "null" ]; then
-            echo "Error: Could not extract buildUrl from eas build:list."
+            echo "Parsing as object failed, trying as array..."
+            APK_URL=$(cat build.json | jq -r '.[0].artifacts.buildUrl')
+          fi
+
+          # Final check to ensure the URL was extracted
+          if [ -z "$APK_URL" ] || [ "$APK_URL" == "null" ]; then
+            echo "Error: Could not extract buildUrl from the EAS build output."
             exit 1
           fi
 
