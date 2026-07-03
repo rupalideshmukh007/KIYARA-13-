@@ -13,10 +13,10 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.yourname.kiyara"
+      "bundleIdentifier": "com.rupalideshmukh007.kiyara"
     },
     "android": {
-      "package": "com.yourname.kiyara",
+      "package": "com.rupalideshmukh007.kiyara",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0f0c29"
