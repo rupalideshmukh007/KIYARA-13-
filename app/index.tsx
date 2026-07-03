@@ -10,16 +10,16 @@ export default function HomeScreen() {
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <Text style={styles.title}>Kiyara AI</Text>
       <View style={styles.buttonContainer}>
-        <Link href="/chat" asChild>
-          <Pressable style={styles.button}>
-            <Text style={styles.buttonText}>💬</Text>
-            <Text style={styles.buttonLabel}>Chat with Kiyara</Text>
-          </Pressable>
-        </Link>
         <Link href="/teach" asChild>
           <Pressable style={styles.button}>
-            <Text style={styles.buttonText}>🤡</Text>
+            <Text style={styles.buttonText}>💬</Text>
             <Text style={styles.buttonLabel}>Teach Kiyara</Text>
+          </Pressable>
+        </Link>
+        <Link href="/chat" asChild>
+          <Pressable style={styles.button}>
+            <Text style={styles.buttonText}>🤡</Text>
+            <Text style={styles.buttonLabel}>Chat with Kiyara</Text>
           </Pressable>
         </Link>
       </View>
