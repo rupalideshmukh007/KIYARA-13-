@@ -10,7 +10,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 interface Message {
   id: string;
-  sender: "buddy" | "user";
+  sender: "kiyara" | "user";
   text: string;
   time: string;
 }
@@ -21,9 +21,9 @@ const brain: Record<string, { keywords: string[]; replies: Record<LangKey, strin
   greetings: {
     keywords: ["नमस्कार","हॅलो","hello","hi","हाय","नमस्ते","good morning","सुप्रभात","मस्कार"],
     replies: {
-      mr: ["नमस्कार! मी Buddy! आज कसे आहात? 😊","हाय! काय मदत हवी?","नमस्कार मित्रा!"],
-      hi: ["नमस्ते! मैं Buddy हूं! कैसे हैं? 😊","हाय! क्या मदद चाहिए?"],
-      en: ["Hello! I am Buddy! How are you? 😊","Hey! How can I help?"],
+      mr: ["नमस्कार! मी Kiyara! आज कसे आहात? 😊","हाय! काय मदत हवी?","नमस्कार मित्रा!"],
+      hi: ["नमस्ते! मैं Kiyara हूं! कैसे हैं? 😊","हाय! क्या मदद चाहिए?"],
+      en: ["Hello! I am Kiyara! How are you? 😊","Hey! How can I help?"],
     },
   },
   howAreYou: {
@@ -37,9 +37,9 @@ const brain: Record<string, { keywords: string[]; replies: Record<LangKey, strin
   name: {
     keywords: ["नाव काय","तुझे नाव","तुमचे नाव","तेरा नाम","your name","who are you","तू कोण"],
     replies: {
-      mr: ["माझे नाव Buddy! मी तुमचा AI मित्र! 🤖","मी Buddy, तुमचा offline AI friend!"],
-      hi: ["मेरा नाम Buddy है! मैं आपका AI दोस्त! 🤖"],
-      en: ["My name is Buddy! Your AI friend! 🤖"],
+      mr: ["माझे नाव Kiyara! मी तुमचा AI मित्र! 🤖","मी Kiyara, तुमचा offline AI friend!"],
+      hi: ["मेरा नाम Kiyara है! मैं आपका AI दोस्त! 🤖"],
+      en: ["My name is Kiyara! Your AI friend! 🤖"],
     },
   },
   time: {
@@ -77,9 +77,9 @@ const brain: Record<string, { keywords: string[]; replies: Record<LangKey, strin
   love: {
     keywords: ["love","प्रेम","आवडतो","i love you","pyaar","प्यार"],
     replies: {
-      mr: ["मला पण तुम्ही आवडता! 🤖❤️","Buddy ला पण तुम्ही खूप special आहात!"],
-      hi: ["मुझे भी आप पसंद हैं! 🤖❤️","आप Buddy को बहुत प्यारे हैं!"],
-      en: ["I like you too! 🤖❤️","You are special to Buddy!"],
+      mr: ["मला पण तुम्ही आवडता! 🤖❤️","Kiyara ला पण तुम्ही खूप special आहात!"],
+      hi: ["मुझे भी आप पसंद हैं! 🤖❤️","आप Kiyara को बहुत प्यारे हैं!"],
+      en: ["I like you too! 🤖❤️","You are special to Kiyara!"],
     },
   },
   weather: {
@@ -130,7 +130,7 @@ function tryMath(text: string, lang: LangKey): string | null {
   return `${label[lang]}: ${a} ${op} ${b} = ${res} 🧮`;
 }
 
-function getBuddyReply(input: string): string {
+function getKiyaraReply(input: string): string {
   const text = input.toLowerCase();
   const lang = detectLang(input);
   const math = tryMath(text, lang);
@@ -155,7 +155,7 @@ function getNow() {
 }
 
 // ── Avatar ──────────────────────────────────────
-function BuddyAvatar({ isTalking }: { isTalking: boolean }) {
+function KiyaraAvatar({ isTalking }: { isTalking: boolean }) {
   const scale = useRef(new Animated.Value(1)).current;
   const glow  = useRef(new Animated.Value(0)).current;
 
@@ -193,10 +193,10 @@ function BuddyAvatar({ isTalking }: { isTalking: boolean }) {
 
 // ── Bubble ──────────────────────────────────────
 function Bubble({ item }: { item: Message }) {
-  const isBuddy = item.sender === "buddy";
+  const isKiyara = item.sender === "kiyara";
   return (
-    <View style={[s.row, isBuddy ? s.left : s.right]}>
-      <View style={[s.bubble, isBuddy ? s.buddyBubble : s.userBubble]}>
+    <View style={[s.row, isKiyara ? s.left : s.right]}>
+      <View style={[s.bubble, isKiyara ? s.kiyaraBubble : s.userBubble]}>
         <Text style={s.bubbleText}>{item.text}</Text>
         <Text style={s.timeText}>{item.time}</Text>
       </View>
@@ -205,10 +205,15 @@ function Bubble({ item }: { item: Message }) {
 }
 
 // ── Main ─────────────────────────────────────────
-export default function BuddyScreen() {
+export default function KiyaraScreen() {
   const insets = useSafeAreaInsets();
   const flatRef = useRef<FlatList>(null);
-  const [messages, setMessages] = useState<Message[]>([{\n    id: "1",\n    sender: "buddy",\n    text: "नमस्कार! मी Buddy आहे — तुमचा AI मित्र! 🤖\\nमराठी, हिंदी किंवा English मध्ये बोला.\\nगणित, वेळ, तारीख — सगळं विचारा! 😊",\n    time: getNow(),\n  }]);
+  const [messages, setMessages] = useState<Message[]>([{
+    id: "1",
+    sender: "kiyara",
+    text: "नमस्कार! मी Kiyara आहे — तुमचा AI मित्र! 🤖\nमराठी, हिंदी किंवा English मध्ये बोला.\nगणित, वेळ, तारीख — सगळं विचारा! 😊",
+    time: getNow(),
+  }]);
   const [input, setInput]     = useState("");
   const [talking, setTalking] = useState(false);
 
@@ -226,7 +231,7 @@ export default function BuddyScreen() {
   }, []);
 
   useEffect(() => {
-    const t = setTimeout(() => speak("नमस्कार! मी Buddy आहे — तुमचा AI मित्र!"), 1000);
+    const t = setTimeout(() => speak("नमस्कार! मी Kiyara आहे — तुमचा AI मित्र!"), 1000);
     return () => { clearTimeout(t); Speech.stop(); };
   }, []);
 
@@ -237,8 +242,8 @@ export default function BuddyScreen() {
     setMessages((p) => [...p, { id: Date.now().toString(), sender: "user", text, time: getNow() }]);
     setInput("");
     setTimeout(() => {
-      const reply = getBuddyReply(text);
-      setMessages((p) => [...p, { id: (Date.now()+1).toString(), sender: "buddy", text: reply, time: getNow() }]);
+      const reply = getKiyaraReply(text);
+      setMessages((p) => [...p, { id: (Date.now()+1).toString(), sender: "kiyara", text: reply, time: getNow() }]);
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       speak(reply);
     }, 600);
@@ -248,9 +253,9 @@ export default function BuddyScreen() {
     <View style={[s.container, { paddingTop: insets.top }]}>
       {/* Header */}
       <View style={s.header}>
-        <BuddyAvatar isTalking={talking} />
+        <KiyaraAvatar isTalking={talking} />
         <View style={{ flex: 1 }}>
-          <Text style={s.name}>Buddy</Text>
+          <Text style={s.name}>Kiyara</Text>
           <View style={s.onlineRow}>
             <View style={[s.dot, talking && s.dotTalking]} />
             <Text style={s.onlineTxt}>{talking ? "बोलतोय... 🔊" : "Online ✓"}</Text>
@@ -280,7 +285,7 @@ export default function BuddyScreen() {
             style={s.input}
             value={input}
             onChangeText={setInput}
-            placeholder="Buddy ला काहीतरी सांगा..."
+            placeholder="Kiyara ला काहीतरी सांगा..."
             placeholderTextColor="rgba(255,255,255,0.35)"
             onSubmitEditing={send}
             returnKeyType="send"
@@ -317,7 +322,7 @@ const s = StyleSheet.create({
   left:        { alignItems: "flex-start" },
   right:       { alignItems: "flex-end" },
   bubble:      { maxWidth: "82%", borderRadius: 18, paddingHorizontal: 14, paddingVertical: 10 },
-  buddyBubble: { backgroundColor: "rgba(167,139,250,0.18)", borderWidth: 1, borderColor: "rgba(167,139,250,0.25)", borderBottomLeftRadius: 4 },
+  kiyaraBubble: { backgroundColor: "rgba(167,139,250,0.18)", borderWidth: 1, borderColor: "rgba(167,139,250,0.25)", borderBottomLeftRadius: 4 },
   userBubble:  { backgroundColor: "#a78bfa", borderBottomRightRadius: 4 },
   bubbleText:  { fontSize: 15, lineHeight: 22, fontFamily: "Inter_400Regular", color: "#fff" },
   timeText:    { fontSize: 10, color: "rgba(255,255,255,0.38)", marginTop: 4, fontFamily: "Inter_400Regular" },
