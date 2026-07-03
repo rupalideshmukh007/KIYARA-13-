@@ -10,8 +10,8 @@ pluginManagement {
   // KIARA: The path was being resolved from the android directory, not the project root.
   // Correcting the path to point to the project's node_modules folder.
   def expoPluginsPath = new File(
-    rootDir,
-    "../node_modules/expo-modules-autolinking/android/expo-gradle-plugin"
+    settings.rootDir, // Use settings.rootDir to refer to the root of the entire project
+    "node_modules/expo-modules-autolinking/android/expo-gradle-plugin"
   ).absolutePath
   includeBuild(expoPluginsPath)
 }
