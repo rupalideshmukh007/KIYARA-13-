@@ -1,5 +1,5 @@
 
-package com.yourname.kiyara
+package com.rupalideshmukh007.kiyara
 
 import android.app.Application
 import android.content.res.Configuration

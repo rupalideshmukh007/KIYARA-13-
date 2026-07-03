@@ -1,5 +1,5 @@
 
-package com.yourname.kiyara
+package com.rupalideshmukh007.kiyara
 
 import com.facebook.react.ReactPackage
 import com.facebook.react.bridge.NativeModule
@@ -11,7 +11,7 @@ class FloatingWindowPackage : ReactPackage {
         return listOf(FloatingWindowModule(reactContext))
     }
 
-    override fun createViewManagers(reactContext: ReactApplicationCsontext): List<ViewManager<*, *>> {
+    override fun createViewManagers(reactContext: ReactApplicationContext): List<ViewManager<*, *>> {
         return emptyList()
     }
 }

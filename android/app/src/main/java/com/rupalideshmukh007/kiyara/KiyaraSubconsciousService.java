@@ -1,5 +1,5 @@
 
-package com.yourname.kiyara;
+package com.rupalideshmukh007.kiyara;
 
 import android.app.Service;
 import android.content.Intent;
@@ -30,12 +30,12 @@ public class KiyaraSubconsciousService extends Service {
             // Let's have a thought in the morning
             if (hour == 8) { // 8 AM
                 Log.d(TAG, "It's 8 AM. Time to greet the user.");
-                speak("शुभ सकाळ, मित्र. तुमचा दिवस छान जाओ.");
+                speak("शुभ सकाळ, रुपली. तुमचा दिवस छान जाओ.");
             }
 
             // Let's have a thought in the evening
             if (hour == 20) { // 8 PM
-                 speak("शुभ रात्री, मित्र. शांत झोप लागावी.");
+                 speak("शुभ रात्री, रुपली. शांत झोप लागावी.");
             }
 
             // Schedule the next thought in an hour
