@@ -2,5 +2,4 @@
   <string name="app_name">KIYARA</string>
   <string name="expo_splash_screen_resize_mode" translatable="false">contain</string>
   <string name="expo_splash_screen_status_bar_translucent" translatable="false">false</string>
-  <string name="accessibility_service_description">Kiyara uses this permission to learn new tasks by observing your actions on the screen. This allows her to automate tasks for you in the future.</string>
 </resources>
