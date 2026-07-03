@@ -32,7 +32,7 @@ jobs:
           BUILD_OUTPUT=$(eas build --platform android --profile production --non-interactive --json)
           echo "EAS Build Output:"
           echo $BUILD_OUTPUT
-          APK_URL=$(echo $BUILD_OUTPUT | jq -r '[0].artifacts.buildUrl')
+          APK_URL=$(echo $BUILD_OUTPUT | jq -r '.artifacts.buildUrl')
           echo "Found APK URL: $APK_URL"
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
