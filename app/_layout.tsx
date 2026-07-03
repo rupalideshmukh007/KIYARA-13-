@@ -11,6 +11,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import FloatingKiyaraButton from "@/components/FloatingKiyaraButton"; // Import the button
 
 SplashScreen.preventAutoHideAsync();
 const queryClient = new QueryClient();
@@ -36,6 +37,7 @@ export default function RootLayout() {
               <Stack screenOptions={{ headerShown: false }}>
                 <Stack.Screen name="index" />
               </Stack>
+              <FloatingKiyaraButton />
             </KeyboardProvider>
           </GestureHandlerRootView>
         </QueryClientProvider>
