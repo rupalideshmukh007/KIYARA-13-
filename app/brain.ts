@@ -2,6 +2,12 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export type LangKey = "mr" | "hi" | "en";
 export type Brain = Record<string, { keywords: string[]; replies: Record<LangKey, string[]> }>;
+export type KiyaraKnowledge = {
+  icon: string;
+  title: string;
+  content: string;
+};
+export type KnowledgeBase = Record<string, KiyaraKnowledge>;
 
 const initialBrain: Brain = {
   greetings: {
@@ -86,7 +92,16 @@ const initialBrain: Brain = {
   },
 };
 
+const initialKnowledge: KnowledgeBase = {
+  "महाशिवपुराण": {
+    icon: "🕉️",
+    title: "महाशिवपुराण",
+    content: "महाशिवपुराण हे एक प्रमुख हिंदू धार्मिक ग्रंथ आहे...",
+  }
+};
+
 let brain: Brain = initialBrain;
+let knowledge: KnowledgeBase = initialKnowledge;
 
 export async function loadBrain() {
   try {
@@ -94,11 +109,16 @@ export async function loadBrain() {
     if (storedBrain) {
       brain = JSON.parse(storedBrain);
     } else {
-      // No stored brain, use initial and save it
       await saveBrain();
     }
+    const storedKnowledge = await AsyncStorage.getItem("kiyara-knowledge");
+    if (storedKnowledge) {
+      knowledge = JSON.parse(storedKnowledge);
+    } else {
+      await saveKnowledge();
+    }
   } catch (e) {
-    console.error("Failed to load brain.", e);
+    console.error("Failed to load brain or knowledge.", e);
   }
 }
 
@@ -110,13 +130,30 @@ export async function saveBrain() {
   }
 }
 
+export async function saveKnowledge() {
+  try {
+    await AsyncStorage.setItem("kiyara-knowledge", JSON.stringify(knowledge));
+  } catch (e) {
+    console.error("Failed to save knowledge.", e);
+  }
+}
+
 export function getBrain() {
   return brain;
+}
+
+export function getKnowledge() {
+  return knowledge;
 }
 
 export function updateBrain(newBrain: Brain) {
   brain = newBrain;
   saveBrain();
+}
+
+export function updateKnowledge(newKnowledge: KnowledgeBase) {
+  knowledge = newKnowledge;
+  saveKnowledge();
 }
 
 function detectLang(text: string): LangKey {
@@ -153,14 +190,24 @@ export function getKiyaraReply(input: string): string {
   loadBrain(); // Ensure brain is loaded
   const text = input.toLowerCase();
   const lang = detectLang(input);
+  
+  // Try to find a reply from the knowledge base first
+  for (const [, know] of Object.entries(knowledge)) {
+    if (text.includes(know.title.toLowerCase())) {
+      return know.content;
+    }
+  }
+
   const math = tryMath(text, lang);
   if (math) return math;
+  
   for (const [, data] of Object.entries(brain)) {
     if (data.keywords.some((kw) => text.includes(kw.toLowerCase()))) {
       const arr = data.replies[lang] ?? data.replies.en;
       return arr[Math.floor(Math.random() * arr.length)];
     }
   }
+  
   const defaults: Record<LangKey, string[]> = {
     mr: ["माफ करा, नक्की समजले नाही. वेगळ्या शब्दात सांगाल का? 🙏","हम्म... पुन्हा सांगाल का?","Interesting! मला आणखी सांगा."],
     hi: ["माफ करना, समझ नहीं आया। दोबारा बताइए?","हम्म, मैं सीख रहा हूं!"],
