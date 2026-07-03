@@ -11,7 +11,7 @@ pluginManagement {
   // Correcting the path to point to the project's node_modules folder.
   def expoPluginsPath = new File(
     rootDir,
-    "../node_modules/expo-modules-autolinking/android/expo-gradle-plugin"
+    "../../node_modules/expo-modules-autolinking/android/expo-gradle-plugin"
   ).absolutePath
   includeBuild(expoPluginsPath)
 }
